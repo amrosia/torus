@@ -48,7 +48,7 @@ fn main() {
                 let cos_j = j.cos();
                 let sin_j = j.sin();
                 
-                // Shift the circle by +2.0, adding radius from the center. 
+                // Offset by 2.0 units to represent the donut's major radius
                 let cos_j2 = cos_j + 2.0; 
 
                 // Project 3D donut onto 2D screen
@@ -57,38 +57,50 @@ fn main() {
                 // Calculate the "inverted distance" for perpective projection
                 // see: <https://www.a1k0n.net/img/perspective.pnghttps://www.a1k0n.net/img/perspective.png>
                 
-                // 5.0 is an offset tha pushed the donut in front of the camera
-                // (sin_i * cos_j2 * sin_a + sin_j * cos_a)
+                // 5.0 is an offset that pushed the donut in front of the camera
+                // (sin_i * cos_j2 * sin_a + sin_j * cos_a) rotates the donut in 3D
                 let mess = 1.0 / (sin_i * cos_j2 * sin_a + sin_j * cos_a + 5.0);
 
+                // Value for rotations on the X-axis
                 let t = sin_i * cos_j2 * cos_a - sin_j * sin_a;
 
+                // Project the 3D coordinates to 2D screen coordinates
+                // 40.0 and 11.0 center the donut on the screen
+                // 30.0 and 15.0 scale the donut to fill the width/height
                 let x = (40.0 + 30.0 * mess * (cos_i * cos_j2 * cos_b - t * sin_b)) as isize;
                 let y = (11.0 + 15.0 * mess * (cos_i * cos_j2 * sin_b + t * cos_b)) as isize;
+
+                // Convert 2D x,y into a single index for the 1D buffers
                 let o = x + width as isize * y;
 
+                // n picks which character to choose from the ASCII charset based on brightness
                 let n = ((8.0
                     * ((sin_j * sin_a - sin_i * cos_j * cos_a) * cos_b
                         - sin_i * cos_j * sin_a
                         - sin_j * cos_a
                         - cos_i * cos_j * sin_b))
-                    as isize).clamp(0, 28);
+                    as isize).clamp(0, 11); // clamp ensures that each part of the donut receives a
+                                            // character even if it's brightess is out of bounds
 
+                // Check if (x, y) is within the screen bounds
                 if (0..height as isize).contains(&y)
                     && (0..width as isize).contains(&x)
                     && z[o as usize] < mess
                 {
+                    // Update the depth buffer
                     z[o as usize] = mess;
+                    // Choose a character from the string based on 'n'
                     screen[o as usize] = ".,-~:;=!*#$@".chars().nth(n as usize).unwrap_or(' ');
                 }
             }
         }
 
-        // Clear the screen to make space for next frame
+        // Clear the screen for the next frame
         Command::new(clear_command)
             .status()
             .expect("Failed to clear the screen");
 
+        // Prints out the 'screen' buffer, displaying the donut
         for (index, char) in screen.iter().enumerate() {
             if index % width == 0 {
                 println!();
@@ -96,12 +108,12 @@ fn main() {
                 print!("{}", char);
             }
         }
-
+        // Flush stdout to ensure everything is printed immediately
         io::stdout().flush().unwrap();
 
-        // Increments
-        a += 0.04;
-        b += 0.02;
+        // Increment angles for the next frame, causing rotation
+        a += 0.04; // rotate X-axis a bit more
+        b += 0.02; // rotate Z-axis a bit more
 
         // Delay between each frame, controls the animation speed  
         thread::sleep(time::Duration::from_millis(20));
