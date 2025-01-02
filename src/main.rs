@@ -21,6 +21,10 @@ fn main() {
     // Delay (Animation speed: less --> faster)
     let animation_speed = 20;
 
+    // Donut render angles
+    let donut_ring_angle: f32 = 360.0;
+    let donut_tube_angle: f32 = 360.0;
+
     // Choose the command for clearing the terminal based on OS
     let clear_command = if cfg!(windows) { "cls" } else { "clear" };
 
@@ -36,12 +40,12 @@ fn main() {
 // j - the donut ring, spins the circle that forms the donut
         let mut j: f32 = 0.0;
         // Outer loop angle j goes from 0 to 2 pi (with small steps)
-        while j < 2.0 * PI {
+        while j < (donut_ring_angle / 180.0) * PI {
             j += 0.07;
 
             // Inner loop angle i goes from 0 to 2 pi (with smaller steps)
             let mut i: f32 = 0.0;
-            while i < 2.0 * PI {
+            while i < (donut_tube_angle / 180.0) * PI {
                 i += 0.02;
 
 
