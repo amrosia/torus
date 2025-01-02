@@ -8,9 +8,18 @@ fn main() {
     let mut a: f32 = 0.0; // X axis rotation
     let mut b: f32 = 0.0; // Z axis rotation
 
+    // Major and minor radius
+    let major_r: f32 = 2.0; // Major is distance from the center to the donut
+    let minor_r: f32 = 1.0; // Minor is the size of the donut
+    
+    // Camera distance
+    let cam_distance: f32 = 5.0;
     // Terminal size
     let height: usize = 24;
     let width: usize = 80;
+
+    // Delay (Animation speed: less --> faster)
+    let animation_speed = 20;
 
     // Choose the command for clearing the terminal based on OS
     let clear_command = if cfg!(windows) { "cls" } else { "clear" };
@@ -49,17 +58,17 @@ fn main() {
                 let sin_j = j.sin();
                 
                 // Offset by 2.0 units to represent the donut's major radius
-                let cos_j2 = cos_j + 2.0; 
-
+                let cos_j2 = major_r + minor_r * cos_j;
                 // Project 3D donut onto 2D screen
                 
                 
                 // Calculate the "inverted distance" for perpective projection
                 // see: <https://www.a1k0n.net/img/perspective.pnghttps://www.a1k0n.net/img/perspective.png>
                 
-                // 5.0 is an offset that pushed the donut in front of the camera
+                // camera distance is an offset that pushed the donut in front of the camera
+
                 // (sin_i * cos_j2 * sin_a + sin_j * cos_a) rotates the donut in 3D
-                let mess = 1.0 / (sin_i * cos_j2 * sin_a + sin_j * cos_a + 5.0);
+                let mess = 1.0 / (minor_r * sin_i * cos_j2 * sin_a + sin_j * cos_a + cam_distance);
 
                 // Value for rotations on the X-axis
                 let t = sin_i * cos_j2 * cos_a - sin_j * sin_a;
@@ -116,6 +125,6 @@ fn main() {
         b += 0.02; // rotate Z-axis a bit more
 
         // Delay between each frame, controls the animation speed  
-        thread::sleep(time::Duration::from_millis(20));
+        thread::sleep(time::Duration::from_millis(animation_speed));
     }
 }
