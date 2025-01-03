@@ -2,28 +2,50 @@ use std::f32::consts::PI; // const PI for math
 use std::io::{self, Write}; // for printing the donut
 use std::{thread, time}; // To control animation speed
 use std::process::Command; // To clear the screen between frames
-
+use clap::{ArgAction, Parser};
 fn main() {
     // Rotation angle base values (to change rotation, change increment angles instead of these)
-    let mut a: f32 = 0.0; // X axis rotation
-    let mut b: f32 = 0.0; // Z axis rotation
+    let mut a: f32 = 0.0; // X-axis rotation
+    let mut b: f32 = 0.0; // Z-axis rotation
+#[derive(Parser, Debug)]
+#[command(version, about, long_about = None, disable_help_flag = true)]
+    struct Cli {
+    /// Print help
+    #[arg(long = "help", action = ArgAction::Help)]
+        help: bool,
+    /// The distance from the center to the donut
+    #[arg(long = "major", default_value = "2.0")]
+        major_r: f32,
+    /// The size of the donut
+    #[arg(long = "minor", default_value = "1.0")]
+        minor_r: f32,
+    /// The distance from the camera to the donut
+    #[arg(short = 'd', long = "dist", default_value = "5.0")]
+        cam_distance: f32,
+    /// The height of the terminal
+    #[arg(long = "height", default_value = "24")]
+        height: usize,
+    /// The width of the terminal
+    #[arg(short = 'w', long = "width", default_value = "80")]
+        width: usize,
+    /// The delay between each frame
+    #[arg(long = "delay", default_value = "20")]
+        delay: u64,
+    /// The angle of the donut ring (in degrees)
+    #[arg(long = "ring", default_value = "360.0")]
+        donut_ring_angle: f32,
+    /// The angle of the donut tube (in degrees)
+    #[arg(long = "tube", default_value = "360.0")]
+        donut_tube_angle: f32,
+    /// X-axis increment angle
+    #[arg(long = "x-inc", default_value = "0.04")]
+        x_inc: f32,
+    /// Z-axis increment angle
+    #[arg(long = "z-inc", default_value = "0.02")]
+        z_inc: f32,
+    }
 
-    // Major and minor radius
-    let major_r: f32 = 2.0; // Major is distance from the center to the donut
-    let minor_r: f32 = 1.0; // Minor is the size of the donut
-    
-    // Camera distance
-    let cam_distance: f32 = 5.0;
-    // Terminal size
-    let height: usize = 24;
-    let width: usize = 80;
-
-    // Delay (less --> faster)
-    let delay = 20;
-
-    // Donut render angles
-    let donut_ring_angle: f32 = 360.0;
-    let donut_tube_angle: f32 = 360.0;
+    let cli = Cli::parse();
 
     // Choose the command for clearing the terminal based on OS
     let clear_command = if cfg!(windows) { "cls" } else { "clear" };
@@ -34,18 +56,18 @@ fn main() {
         // screen - character buffer
         // 'z' will store the depth values to determine if a pixel is "in front"
         // 'screen' will store the ASCII character to display at each pixel
-        let mut z = vec![0.0; height * width];
-        let mut screen = vec![' '; height * width];
+        let mut z = vec![0.0; cli.height * cli.width];
+        let mut screen = vec![' '; cli.height * cli.width];
 // i - the circle
 // j - the donut ring, spins the circle that forms the donut
         let mut j: f32 = 0.0;
         // Outer loop angle j goes from 0 to 2 pi (with small steps)
-        while j < (donut_ring_angle / 180.0) * PI {
+        while j < (cli.donut_ring_angle / 180.0) * PI {
             j += 0.07;
 
             // Inner loop angle i goes from 0 to 2 pi (with smaller steps)
             let mut i: f32 = 0.0;
-            while i < (donut_tube_angle / 180.0) * PI {
+            while i < (cli.donut_tube_angle / 180.0) * PI {
                 i += 0.02;
 
 
@@ -62,7 +84,7 @@ fn main() {
                 let sin_j = j.sin();
                 
                 // Offset by 2.0 units to represent the donut's major radius
-                let cos_j2 = major_r + minor_r * cos_j;
+                let cos_j2 = cli.major_r + cli.minor_r * cos_j;
                 // Project 3D donut onto 2D screen
                 
                 
@@ -72,7 +94,7 @@ fn main() {
                 // camera distance is an offset that pushed the donut in front of the camera
 
                 // (sin_i * cos_j2 * sin_a + sin_j * cos_a) rotates the donut in 3D
-                let mess = 1.0 / (minor_r * sin_i * cos_j2 * sin_a + sin_j * cos_a + cam_distance);
+                let mess = 1.0 / (cli.minor_r * sin_i * cos_j2 * sin_a + sin_j * cos_a + cli.cam_distance);
 
                 // Value for rotations on the X-axis
                 let t = sin_i * cos_j2 * cos_a - sin_j * sin_a;
@@ -84,7 +106,7 @@ fn main() {
                 let y = (11.0 + 15.0 * mess * (cos_i * cos_j2 * sin_b + t * cos_b)) as isize;
 
                 // Convert 2D x,y into a single index for the 1D buffers
-                let o = x + width as isize * y;
+                let o = x + cli.width as isize * y;
 
                 // n picks which character to choose from the ASCII charset based on brightness
                 let n = ((8.0
@@ -96,8 +118,8 @@ fn main() {
                                             // character even if it's brightess is out of bounds
 
                 // Check if (x, y) is within the screen bounds
-                if (0..height as isize).contains(&y)
-                    && (0..width as isize).contains(&x)
+                if (0..cli.height as isize).contains(&y)
+                    && (0..cli.width as isize).contains(&x)
                     && z[o as usize] < mess
                 {
                     // Update the depth buffer
@@ -115,7 +137,7 @@ fn main() {
 
         // Prints out the 'screen' buffer, displaying the donut
         for (index, char) in screen.iter().enumerate() {
-            if index % width == 0 {
+            if index % cli.width == 0 {
                 println!();
             } else {
                 print!("{}", char);
@@ -125,10 +147,10 @@ fn main() {
         io::stdout().flush().unwrap();
 
         // Increment angles for the next frame, causing rotation
-        a += 0.04; // rotate X-axis a bit more
-        b += 0.02; // rotate Z-axis a bit more
+        a += cli.x_inc; // rotate X-axis a bit more
+        b += cli.z_inc; // rotate Z-axis a bit more
 
         // Delay between each frame, controls the animation speed  
-        thread::sleep(time::Duration::from_millis(delay));
+        thread::sleep(time::Duration::from_millis(cli.delay));
     }
 }
