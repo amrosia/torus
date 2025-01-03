@@ -40,9 +40,22 @@ fn main() {
     /// Z-axis increment angle
     #[arg(long = "z-inc", default_value = "0.02")]
         z_inc: f32,
+
+    /// X-axis offset (horizontal position of the donut)
+    #[arg(long = "offset-x")]
+    offset_x: Option<f32>,
+
+    /// Y-axis offset (vertical position of the donut)
+    #[arg(long = "offset-y")]
+    offset_y: Option<f32>,
     }
 
     let cli = Cli::parse();
+
+    // Calculate default offsets for the terminal if not provided
+    let offset_x = cli.offset_x.unwrap_or((cli.width as f32) / 2.0);
+    let offset_y = cli.offset_y.unwrap_or((cli.height as f32) / 2.0);
+
 
     // Choose the command for clearing the terminal based on OS
     let clear_command = if cfg!(windows) { "cls" } else { "clear" };
@@ -97,10 +110,10 @@ fn main() {
                 let t = sin_i * cos_j2 * cos_a - sin_j * sin_a;
 
                 // Project the 3D coordinates to 2D screen coordinates
-                // 40.0 and 11.0 center the donut on the screen
+                // offset_x and offset_y center the donut on the screen
                 // 30.0 and 15.0 scale the donut to fill the width/height
-                let x = (40.0 + 30.0 * mess * (cos_i * cos_j2 * cos_b - t * sin_b)) as isize;
-                let y = (11.0 + 15.0 * mess * (cos_i * cos_j2 * sin_b + t * cos_b)) as isize;
+                let x = (offset_x + 30.0 * mess * (cos_i * cos_j2 * cos_b - t * sin_b)) as isize;
+                let y = (offset_y + 15.0 * mess * (cos_i * cos_j2 * sin_b + t * cos_b)) as isize;
 
                 // Convert 2D x,y into a single index for the 1D buffers
                 let o = x + cli.width as isize * y;
