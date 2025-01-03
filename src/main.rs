@@ -2,17 +2,14 @@ use std::f32::consts::PI; // const PI for math
 use std::io::{self, Write}; // for printing the donut
 use std::{thread, time}; // To control animation speed
 use std::process::Command; // To clear the screen between frames
-use clap::{ArgAction, Parser};
+use clap::Parser;
 fn main() {
     // Rotation angle base values (to change rotation, change increment angles instead of these)
     let mut a: f32 = 0.0; // X-axis rotation
     let mut b: f32 = 0.0; // Z-axis rotation
 #[derive(Parser, Debug)]
-#[command(version, about, long_about = None, disable_help_flag = true)]
+#[command(version, about, long_about = None)]
     struct Cli {
-    /// Print help
-    #[arg(long = "help", action = ArgAction::Help)]
-        help: bool,
     /// The distance from the center to the donut
     #[arg(long = "major", default_value = "2.0")]
         major_r: f32,
@@ -26,7 +23,7 @@ fn main() {
     #[arg(long = "height", default_value = "24")]
         height: usize,
     /// The width of the terminal
-    #[arg(short = 'w', long = "width", default_value = "80")]
+    #[arg(long = "width", default_value = "80")]
         width: usize,
     /// The delay between each frame
     #[arg(long = "delay", default_value = "20")]
