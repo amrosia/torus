@@ -4,7 +4,7 @@ use std::{thread, time}; // To control animation speed
 use std::process::Command; // To clear the screen between frames
 
 fn main() {
-    // Rotation angles
+    // Rotation angle base values (to change rotation, change increment angles instead of these)
     let mut a: f32 = 0.0; // X axis rotation
     let mut b: f32 = 0.0; // Z axis rotation
 
@@ -18,8 +18,8 @@ fn main() {
     let height: usize = 24;
     let width: usize = 80;
 
-    // Delay (Animation speed: less --> faster)
-    let animation_speed = 20;
+    // Delay (less --> faster)
+    let delay = 20;
 
     // Donut render angles
     let donut_ring_angle: f32 = 360.0;
@@ -129,6 +129,6 @@ fn main() {
         b += 0.02; // rotate Z-axis a bit more
 
         // Delay between each frame, controls the animation speed  
-        thread::sleep(time::Duration::from_millis(animation_speed));
+        thread::sleep(time::Duration::from_millis(delay));
     }
 }
