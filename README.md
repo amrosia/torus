@@ -78,6 +78,10 @@ After building the project, you can run the compiled binary:
     Vertical offset for the donut.
     (optional)
 
+    --charset <CHARSET>
+    Custom charset for rendering the donut
+    Default: .,-~:;=!*#$@
+
 ## Examples
 
 Render a torus with default settings
