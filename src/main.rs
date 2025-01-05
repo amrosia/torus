@@ -48,6 +48,10 @@ fn main() {
     /// Y-axis offset (vertical position of the donut)
     #[arg(long = "offset-y")]
     offset_y: Option<f32>,
+
+    /// Custom charset for rendering the donut
+    #[arg(long = "charset", default_value = ".,-~:;=!*#$@")]
+    charset: String,
     }
 
     let cli = Cli::parse();
@@ -58,7 +62,7 @@ fn main() {
 
 
     // Choose the command for clearing the terminal based on OS
-    let clear_command = if cfg!(windows) { "cls" } else { "clear" };
+    let clear_command = if cfg!(windows) { "cmd.exe /c cls" } else { "clear" };
 
     // Infinite loop to draw new frames
     loop {
@@ -124,8 +128,7 @@ fn main() {
                         - sin_i * cos_j * sin_a
                         - sin_j * cos_a
                         - cos_i * cos_j * sin_b))
-                    as isize).clamp(0, 11); // clamp ensures that each part of the donut receives a
-                                            // character even if it's brightess is out of bounds
+                    as isize).clamp(0, (cli.charset.chars().count() - 1) as isize);
 
                 // Check if (x, y) is within the screen bounds
                 if (0..cli.height as isize).contains(&y)
@@ -134,8 +137,8 @@ fn main() {
                 {
                     // Update the depth buffer
                     z[o as usize] = mess;
-                    // Choose a character from the string based on 'n'
-                    screen[o as usize] = ".,-~:;=!*#$@".chars().nth(n as usize).unwrap_or(' ');
+                    // Use the custom charset instead of hardcoded string
+                    screen[o as usize] = cli.charset.chars().nth(n as usize).unwrap_or(' ');
                 }
             }
         }
