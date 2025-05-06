@@ -1,5 +1,5 @@
 # Torus
-
+![torus](/torus.png)
 Torus is a command-line tool for rendering a rotating torus (donut shape) in your terminal using ASCII characters.
 
 ## Features
